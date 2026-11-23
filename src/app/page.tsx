@@ -1,69 +1,108 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import { Navbar } from "@/components/Navbar";
+import { HeroSection } from "@/components/HeroSection";
+import { PresetSelector } from "@/components/PresetSelector";
+import { PredictionForm } from "@/components/PredictionForm";
+import { ValuationResultCard } from "@/components/ValuationResultCard";
+import { MarketInsights } from "@/components/MarketInsights";
+import { Footer } from "@/components/Footer";
+import { PRESET_PROPERTIES } from "@/lib/presets";
+import { HouseFeaturesInput, PredictionResponse, PresetProperty } from "@/types/prediction";
+import { predictHousePrice } from "@/lib/api";
+
+export default function HomePage() {
+  const [features, setFeatures] = useState<HouseFeaturesInput>(PRESET_PROPERTIES[0].data);
+  const [activePresetId, setActivePresetId] = useState<string>(PRESET_PROPERTIES[0].id);
+  const [prediction, setPrediction] = useState<PredictionResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const formRef = useRef<HTMLDivElement>(null);
+
+  const executeValuation = useCallback(async (data: HouseFeaturesInput) => {
+    setIsLoading(true);
+    try {
+      const result = await predictHousePrice(data);
+      setPrediction(result);
+    } catch (error) {
+      console.error("Valuation failed:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Initial calculation on mount
+  useEffect(() => {
+    executeValuation(PRESET_PROPERTIES[0].data);
+  }, [executeValuation]);
+
+  const handleScrollToForm = () => {
+    formRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSelectPreset = (preset: PresetProperty) => {
+    setFeatures(preset.data);
+    setActivePresetId(preset.id);
+    executeValuation(preset.data);
+    handleScrollToForm();
+  };
+
+  const handleFormChange = (newFeatures: HouseFeaturesInput) => {
+    setFeatures(newFeatures);
+    setActivePresetId(""); // cleared manual edit
+  };
+
+  const handleFormSubmit = () => {
+    executeValuation(features);
+  };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="min-h-screen bg-[#060814] text-[#ededf2] selection:bg-[#0000F2] selection:text-white bg-grid-subtle flex flex-col">
+      <Navbar onSelectPreset={(id) => {
+        const found = PRESET_PROPERTIES.find((p) => p.id === id);
+        if (found) handleSelectPreset(found);
+      }} />
+
+      <main className="flex-1">
+        <HeroSection
+          onScrollToForm={handleScrollToForm}
+          onSelectDefaultPreset={() => handleSelectPreset(PRESET_PROPERTIES[0])}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+
+        <div ref={formRef} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-10">
+          {/* Quick presets row */}
+          <PresetSelector
+            activePresetId={activePresetId}
+            onSelect={handleSelectPreset}
+          />
+
+          {/* Interactive Calculator Workbench */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+            {/* Left Column: Form Controls (7 cols) */}
+            <div className="lg:col-span-7">
+              <PredictionForm
+                features={features}
+                onChange={handleFormChange}
+                onSubmit={handleFormSubmit}
+                isLoading={isLoading}
+              />
+            </div>
+
+            {/* Right Column: Sticky Results & Financial Analysis (5 cols) */}
+            <div className="lg:col-span-5 lg:sticky lg:top-24">
+              <ValuationResultCard
+                prediction={prediction}
+                features={features}
+                isLoading={isLoading}
+              />
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+
+        <MarketInsights />
       </main>
+
+      <Footer />
     </div>
   );
 }
