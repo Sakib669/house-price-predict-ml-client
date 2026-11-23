@@ -4,7 +4,8 @@ import React from "react";
 import { PRESET_PROPERTIES } from "@/lib/presets";
 import { PresetProperty } from "@/types/prediction";
 import { Badge } from "@/components/ui/badge";
-import { House, Compass, Sparkle } from "@phosphor-icons/react";
+import { TiltCard } from "@/components/ui/TiltCard";
+import { House, Compass, Sparkle, ArrowUpRight } from "@phosphor-icons/react";
 
 interface PresetSelectorProps {
   activePresetId?: string;
@@ -13,56 +14,84 @@ interface PresetSelectorProps {
 
 export function PresetSelector({ activePresetId, onSelect }: PresetSelectorProps) {
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4">
+      <div className="flex items-center justify-between border-b border-[#182343]/60 pb-2">
         <div className="flex items-center gap-2">
-          <Sparkle size={15} className="text-[#00D2FF]" />
-          <h4 className="text-xs font-semibold uppercase tracking-wider text-[#94a3b8]">
-            Quick Test Scenarios
+          <div className="flex h-5 w-5 items-center justify-center rounded bg-[#00D2FF]/10 text-[#00D2FF]">
+            <Sparkle size={13} weight="fill" />
+          </div>
+          <h4 className="text-xs font-bold uppercase tracking-wider text-[#f1f2f8]">
+            Architectural Archetype Scenarios
           </h4>
         </div>
-        <span className="text-[11px] text-[#64748b]">Click any scenario to populate</span>
+        <span className="text-[11px] font-mono text-[#8a99b5]">
+          Select to load parameters into 3D engine
+        </span>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {PRESET_PROPERTIES.map((preset) => {
           const isSelected = activePresetId === preset.id;
           return (
-            <button
+            <div
               key={preset.id}
-              type="button"
               onClick={() => onSelect(preset)}
-              className={`group flex flex-col justify-between rounded-xl border p-3.5 text-left transition-all duration-200 cursor-pointer ${
-                isSelected
-                  ? "border-[#0000F2] bg-[#0000F2]/15 shadow-md shadow-[#0000F2]/20 ring-1 ring-[#0000F2]"
-                  : "border-[#1e293b] bg-[#0b0f22]/70 hover:border-[#0000F2]/50 hover:bg-[#101733]"
-              }`}
+              className="cursor-pointer"
             >
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between gap-1">
-                  <span className="text-xs font-bold text-white group-hover:text-[#00D2FF] transition-colors">
-                    {preset.title}
-                  </span>
-                  <Badge variant={isSelected ? "cyan" : "outline"} className="text-[10px] py-0 px-1.5">
-                    {preset.badge}
-                  </Badge>
-                </div>
-                <p className="text-[11px] text-[#94a3b8] line-clamp-2">
-                  {preset.tagline}
-                </p>
-              </div>
+              <TiltCard
+                maxTilt={8}
+                glowColor={isSelected ? "rgba(0, 0, 242, 0.45)" : "rgba(0, 210, 255, 0.22)"}
+                className={`group h-full p-4 transition-all duration-300 ${
+                  isSelected
+                    ? "border-[#0000F2] bg-[#0d1538]/90 ring-1 ring-[#0000F2] shadow-xl shadow-[#0000F2]/25"
+                    : "hover:border-[#00D2FF]/50 hover:bg-[#0c122e]/80"
+                }`}
+              >
+                <div className="flex flex-col justify-between h-full space-y-3">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <Badge
+                        variant={isSelected ? "cyan" : "outline"}
+                        className="text-[10px] py-0.5 px-2 font-mono font-medium"
+                      >
+                        {preset.badge}
+                      </Badge>
+                      <ArrowUpRight
+                        size={14}
+                        className={`transition-transform duration-200 ${
+                          isSelected ? "text-[#00D2FF] translate-x-0.5 -translate-y-0.5" : "text-[#64748b] group-hover:text-white"
+                        }`}
+                      />
+                    </div>
 
-              <div className="mt-3 flex items-center justify-between pt-2 border-t border-[#1e293b]/50 text-[11px] text-[#64748b]">
-                <span className="flex items-center gap-1 font-mono">
-                  <House size={12} />
-                  {preset.data.square_feet.toLocaleString()} sq ft
-                </span>
-                <span className="flex items-center gap-1 font-mono">
-                  <Compass size={12} />
-                  {preset.data.neighborhood}
-                </span>
-              </div>
-            </button>
+                    <h5
+                      style={{ transform: "translateZ(18px)" }}
+                      className="text-sm font-bold text-white group-hover:text-[#00D2FF] transition-colors"
+                    >
+                      {preset.title}
+                    </h5>
+
+                    <p className="text-[11px] text-[#8a99b5] leading-relaxed line-clamp-2">
+                      {preset.tagline}
+                    </p>
+                  </div>
+
+                  <div
+                    style={{ transform: "translateZ(10px)" }}
+                    className="pt-2.5 border-t border-[#182343]/70 flex items-center justify-between text-[11px] text-[#8a99b5] font-mono"
+                  >
+                    <span className="flex items-center gap-1.5">
+                      <House size={13} className="text-[#00D2FF]" />
+                      {preset.data.square_feet.toLocaleString()} sq ft
+                    </span>
+                    <span className="flex items-center gap-1.5 text-white/90">
+                      <Compass size={13} className="text-[#3B82F6]" />
+                      {preset.data.neighborhood}
+                    </span>
+                  </div>
+                </div>
+              </TiltCard>
+            </div>
           );
         })}
       </div>

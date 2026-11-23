@@ -49,7 +49,7 @@ export default function HomePage() {
 
   const handleFormChange = (newFeatures: HouseFeaturesInput) => {
     setFeatures(newFeatures);
-    setActivePresetId(""); // cleared manual edit
+    setActivePresetId(""); // clear active scenario highlight on manual parameter edits
   };
 
   const handleFormSubmit = () => {
@@ -57,20 +57,26 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#060814] text-[#ededf2] selection:bg-[#0000F2] selection:text-white bg-grid-subtle flex flex-col">
-      <Navbar onSelectPreset={(id) => {
-        const found = PRESET_PROPERTIES.find((p) => p.id === id);
-        if (found) handleSelectPreset(found);
-      }} />
+    <div className="min-h-screen bg-[#050711] text-[#f1f2f8] selection:bg-[#0000F2] selection:text-white bg-grid-cad flex flex-col relative overflow-x-hidden">
+      {/* Global Ambient Glow Cones */}
+      <div className="pointer-events-none fixed top-0 left-1/4 h-[500px] w-[500px] rounded-full bg-[#0000F2]/10 blur-[150px]" />
+      <div className="pointer-events-none fixed bottom-1/4 right-1/4 h-[400px] w-[400px] rounded-full bg-[#00D2FF]/6 blur-[130px]" />
 
-      <main className="flex-1">
+      <Navbar
+        onSelectPreset={(id) => {
+          const found = PRESET_PROPERTIES.find((p) => p.id === id);
+          if (found) handleSelectPreset(found);
+        }}
+      />
+
+      <main className="flex-1 relative z-10">
         <HeroSection
           onScrollToForm={handleScrollToForm}
           onSelectDefaultPreset={() => handleSelectPreset(PRESET_PROPERTIES[0])}
         />
 
-        <div ref={formRef} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 space-y-10">
-          {/* Quick presets row */}
+        <div ref={formRef} className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+          {/* 3D Curated Scenarios Row */}
           <PresetSelector
             activePresetId={activePresetId}
             onSelect={handleSelectPreset}
@@ -88,7 +94,7 @@ export default function HomePage() {
               />
             </div>
 
-            {/* Right Column: Sticky Results & Financial Analysis (5 cols) */}
+            {/* Right Column: Sticky Holographic Valuation Result & 3D Model (5 cols) */}
             <div className="lg:col-span-5 lg:sticky lg:top-24">
               <ValuationResultCard
                 prediction={prediction}
